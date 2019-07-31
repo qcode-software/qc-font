@@ -11,13 +11,15 @@ concat: check-version
 	curl --fail -K ~/.curlrc_github -L -o $(NAME)-$(VERSION).tar.gz https://api.github.com/repos/qcode-software/$(NAME)/tarball/v$(VERSION)
 	tar --strip-components=1 -xzvf $(NAME)-$(VERSION).tar.gz -C $(NAME)-$(VERSION)
 	# Clean up
-	rm -rf $(NAME)-$(VERSION)
 	rm $(NAME)-$(VERSION).tar.gz
 upload: check-version
+	# Create directory
+	ssh $(REMOTEUSER)@$(REMOTEHOST) 'mkdir -p $(REMOTEDIR)/$(NAME)/$(VERSION)'
 	# Upload
-	scp -r $(NAME)-$(VERSION)/src $(REMOTEUSER)@$(REMOTEHOST):$(REMOTEDIR)/$(NAME)/$(VERSION)
+	rsync -avz $(NAME)-$(VERSION)/src/ $(REMOTEUSER)@$(REMOTEHOST):$(REMOTEDIR)/$(NAME)/$(VERSION)
 	# Change permissions to read only to prevent files being overwritten
 	ssh $(REMOTEUSER)@$(REMOTEHOST) 'find $(REMOTEDIR)/$(NAME)/$(VERSION) -type f -exec chmod 444 {} +'
+
 clean: 
 	rm -rf $(NAME)-$(VERSION)
 check-version:
