@@ -1,7 +1,6 @@
 NAME=qc-font
-REMOTEHOST=js.qcode.co.uk
-REMOTEDIR=/var/www/html/js.qcode.co.uk
-REMOTEUSER=nsd
+PROFILE=sso_qcode_makefile
+BUCKET=js-qcode-co-uk
 
 all: check-version concat upload clean
 concat: check-version
@@ -13,12 +12,8 @@ concat: check-version
 	# Clean up
 	rm $(NAME)-$(VERSION).tar.gz
 upload: check-version
-	# Create directory
-	ssh $(REMOTEUSER)@$(REMOTEHOST) 'mkdir -p $(REMOTEDIR)/$(NAME)/$(VERSION)'
 	# Upload
-	rsync -avz $(NAME)-$(VERSION)/src/ $(REMOTEUSER)@$(REMOTEHOST):$(REMOTEDIR)/$(NAME)/$(VERSION)
-	# Change permissions to read only to prevent files being overwritten
-	ssh $(REMOTEUSER)@$(REMOTEHOST) 'find $(REMOTEDIR)/$(NAME)/$(VERSION) -type f -exec chmod 444 {} +'
+	aws --profile $(PROFILE) s3 sync $(NAME)-$(VERSION)/src/ s3://$(BUCKET)/$(NAME)/$(VERSION)
 
 clean: 
 	rm -rf $(NAME)-$(VERSION)
